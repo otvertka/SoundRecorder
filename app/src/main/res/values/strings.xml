@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SoundRecorder</string>
+    <string name="action_settings">Settings</string>
 </resources>
