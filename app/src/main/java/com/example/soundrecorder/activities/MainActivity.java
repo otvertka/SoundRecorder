@@ -1,4 +1,4 @@
-package com.example.soundrecorder;
+package com.example.soundrecorder.activities;
 
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 
+import com.example.soundrecorder.R;
 import com.example.soundrecorder.adapters.ViewPagerAdapter;
 import com.example.soundrecorder.fragments.RecordFragment;
 
