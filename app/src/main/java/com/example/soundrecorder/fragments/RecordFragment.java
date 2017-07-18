@@ -18,7 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.soundrecorder.R;
-import com.example.soundrecorder.activities.MainActivity;
+import com.example.soundrecorder.RecordingService;
 
 import java.io.File;
 
@@ -49,16 +49,6 @@ public class RecordFragment extends Fragment {
         //update recording prompt text
         mRecordingPrompt = (TextView) recordView.findViewById(R.id.recording_status_text);
 
-        mPauseButton = (Button) recordView.findViewById(R.id.btnPause);
-        mPauseButton.setVisibility(View.GONE);
-        mPauseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onPauseRecord(mPauseRecording);
-                mPauseRecording = !mPauseRecording;
-            }
-        });
-
         mRecordButton = (FloatingActionButton) recordView.findViewById(R.id.btnRecord);
         mRecordButton.setRippleColor(getResources().getColor(R.color.colorPrimary)); //харит эта хирня, мб что старая версия?..
         mRecordButton.setOnClickListener(new View.OnClickListener() {
@@ -69,12 +59,22 @@ public class RecordFragment extends Fragment {
             }
         });
 
+        mPauseButton = (Button) recordView.findViewById(R.id.btnPause);
+        mPauseButton.setVisibility(View.GONE);
+        mPauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onPauseRecord(mPauseRecording);
+                mPauseRecording = !mPauseRecording;
+            }
+        });
+
         return recordView;
     }
 
     private void onRecord(boolean start) {
 
-        Intent intent = new Intent(getActivity(), MainActivity.class);
+        Intent intent = new Intent(getActivity(), RecordingService.class);
 
         if(start){
             //start recording
@@ -84,6 +84,7 @@ public class RecordFragment extends Fragment {
             File folder = new File(Environment.getExternalStorageDirectory() + "/SoundRecorder");
             if (!folder.exists()){
                 folder.mkdir();
+                Log.d(LOG_TAG, " FOLDER CREATED!!! " + folder.getAbsolutePath());
             }
 
             //start Chronometer
@@ -118,7 +119,7 @@ public class RecordFragment extends Fragment {
             mRecordButton.setImageResource(R.mipmap.ic_mic_white_36dp);
             mPauseButton.setVisibility(View.GONE);
             mChronometer.stop();
-            mChronometer.setBase(SystemClock.elapsedRealtime());
+            mChronometer.setBase(SystemClock.elapsedRealtime()); //это не должно стоять перед стопом???
             timeWhenPaused = 0;
             mRecordingPrompt.setText(R.string.record_prompt);
 
@@ -133,7 +134,10 @@ public class RecordFragment extends Fragment {
             //pause recording
             mPauseButton.setCompoundDrawablesWithIntrinsicBounds(R.mipmap.ic_play_arrow_white_36dp, 0, 0 ,0);
             mRecordingPrompt.setText(getString(R.string.pause_recording_button).toUpperCase());
-            timeWhenPaused = mChronometer.getBase() - SystemClock.elapsedRealtime();
+            timeWhenPaused = mChronometer.getBase() - SystemClock.elapsedRealtime(); //по возможности разобраться с этой хренью
+            //Log.d(LOG_TAG, "time pause: " + timeWhenPaused );
+            //Log.d(LOG_TAG, "mChronometer.getBase(): " + mChronometer.getBase()  );
+            //Log.d(LOG_TAG, "SystemClock.elapsedRealtime(): " + SystemClock.elapsedRealtime()  );
             mChronometer.stop();
         } else {
             //resume recording
