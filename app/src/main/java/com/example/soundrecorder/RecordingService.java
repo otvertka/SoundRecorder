@@ -29,8 +29,7 @@ public class RecordingService extends Service {
 
     private MediaRecorder mRecorder = null;
 
-    //TODO:
-    //private DBHelper mDatabase;
+    private DBHelper mDatabase;
 
     private long mStartingTimeMillis = 0;
     private long mElapsedMilliis = 0;
@@ -55,7 +54,7 @@ public class RecordingService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        //mDatabase = new DBHelper(getApplicationContext());
+        mDatabase = new DBHelper(getApplicationContext());
     }
 
     @Override
@@ -73,7 +72,7 @@ public class RecordingService extends Service {
     }
 
 
-    private void startRecording() {
+    public void startRecording() {
         setFileNameAndPath();
 
         mRecorder = new MediaRecorder();
@@ -102,8 +101,7 @@ public class RecordingService extends Service {
         do{
             count++;
 
-            //mFileName = "My Recording" + "_" + (mDatabase.getCount() + count) + ".mp4";
-            mFileName = "My Recording" + "_" + count + ".mp4";
+            mFileName = "My Recording" + "_" + (mDatabase.getCount() + count) + ".mp4";
             mFilePath = Environment.getExternalStorageDirectory().getAbsolutePath();
             mFilePath += "/SoundRecorder/" + mFileName;
 
@@ -111,7 +109,7 @@ public class RecordingService extends Service {
         } while (f.exists() && !f.isDirectory());
     }
 
-    private void stopRecording() {
+    public void stopRecording() {
         mRecorder.stop();
         mElapsedMilliis = (System.currentTimeMillis() - mStartingTimeMillis);
         mRecorder.release();
@@ -122,7 +120,11 @@ public class RecordingService extends Service {
 
         mRecorder = null;
 
-        //TODO: add try block mDatabase.add ...
+        try {
+            mDatabase.addRecording(mFileName, mFilePath, mElapsedMilliis);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "exception", e);
+        }
 
     }
 }
