@@ -10,7 +10,7 @@ import android.provider.BaseColumns;
 
 import com.example.soundrecorder.listeners.OnDatabaseChangedListener;
 
-class DBHelper extends SQLiteOpenHelper{
+public class DBHelper extends SQLiteOpenHelper{
     private Context mContext;
 
     private static OnDatabaseChangedListener mOnDatabaseChangedListener;
@@ -37,7 +37,7 @@ class DBHelper extends SQLiteOpenHelper{
             DBHelperItem.COLUMN_NAME_RECORDING_LENGTH + " INTEGER " + COMMA_SEP +
             DBHelperItem.COLUMN_NAME_TIME_ADDED + " INTEGER " + ")";
 
-    DBHelper(Context context) {
+    public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         mContext = context;
     }

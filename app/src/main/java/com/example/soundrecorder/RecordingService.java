@@ -11,14 +11,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
-
-/**
- * Created by Дмитрий on 18.07.2017.
- */
 
 public class RecordingService extends Service {
 
@@ -32,13 +24,12 @@ public class RecordingService extends Service {
     private DBHelper mDatabase;
 
     private long mStartingTimeMillis = 0;
-    private long mElapsedMilliis = 0;
-    private int mElapsedSeconds = 0;
+    //private int mElapsedSeconds = 0;
     //private OnTimerChangedListener onTimerChangedListener = null;
-    private static final SimpleDateFormat mTimerFormat = new SimpleDateFormat("mm:ss", Locale.getDefault());
+    //private static final SimpleDateFormat mTimerFormat = new SimpleDateFormat("mm:ss", Locale.getDefault());
 
-    private Timer mTimer = null;
-    private TimerTask mIncrementTimeTask = null;
+    //private Timer mTimer = null;
+    //private TimerTask mIncrementTimeTask = null;
 
 
     @Nullable
@@ -111,7 +102,7 @@ public class RecordingService extends Service {
 
     public void stopRecording() {
         mRecorder.stop();
-        mElapsedMilliis = (System.currentTimeMillis() - mStartingTimeMillis);
+        long mElapsedMillis = (System.currentTimeMillis() - mStartingTimeMillis);
         mRecorder.release();
         Toast.makeText(this, "Recording saved to" + " " + mFilePath, Toast.LENGTH_SHORT).show();
 
@@ -121,7 +112,7 @@ public class RecordingService extends Service {
         mRecorder = null;
 
         try {
-            mDatabase.addRecording(mFileName, mFilePath, mElapsedMilliis);
+            mDatabase.addRecording(mFileName, mFilePath, mElapsedMillis);
         } catch (Exception e) {
             Log.e(LOG_TAG, "exception", e);
         }

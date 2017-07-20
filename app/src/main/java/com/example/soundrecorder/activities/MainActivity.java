@@ -12,6 +12,7 @@ import android.view.Menu;
 
 import com.example.soundrecorder.R;
 import com.example.soundrecorder.adapters.ViewPagerAdapter;
+import com.example.soundrecorder.fragments.FileViewerFragment;
 import com.example.soundrecorder.fragments.RecordFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,9 +47,8 @@ public class MainActivity extends AppCompatActivity {
     public void setupViewPager(ViewPager viewPager){
 
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new RecordFragment(), "1");
-        adapter.addFragment(new RecordFragment(), "2");
-        adapter.addFragment(new RecordFragment(), "3");
+        adapter.addFragment(new RecordFragment(), "Запись");
+        adapter.addFragment(new FileViewerFragment(), "Сохраненные");
         viewPager.setAdapter(adapter);
     }
 }

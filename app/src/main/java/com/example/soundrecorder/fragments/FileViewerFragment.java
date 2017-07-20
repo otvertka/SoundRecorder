@@ -1,32 +1,58 @@
 package com.example.soundrecorder.fragments;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.os.FileObserver;
+import android.support.annotation.Nullable;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.example.soundrecorder.R;
+import com.example.soundrecorder.adapters.FileViewerAdapter;
 
 import static com.example.soundrecorder.fragments.RecordFragment.LOG_TAG;
 
-/**
- * Created by Дмитрий on 19.07.2017.
- */
 
 public class FileViewerFragment extends Fragment {
 
-    private static final String ARG_POSITION = "position";
+    FileViewerAdapter mFileViewerAdapter;
 
-   // private FileViewerAdapter mFileViewerAdapter;
-
-    private int position;
+    public FileViewerFragment() {
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        position = getArguments().getInt(ARG_POSITION);
         observer.startWatching();
     }
 
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_file_viewer, container, false);
 
+        RecyclerView mRecyclerView = (RecyclerView) v.findViewById(R.id.recyclerView);
+        mRecyclerView.setHasFixedSize(true);
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+        llm.setOrientation(LinearLayoutManager.VERTICAL);
+
+        //newest to oldest order (database stores from oldest to newest)
+        llm.setReverseLayout(true);
+        llm.setStackFromEnd(true);
+
+        mRecyclerView.setLayoutManager(llm);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        mFileViewerAdapter = new FileViewerAdapter(getActivity(), llm);
+        mRecyclerView.setAdapter(mFileViewerAdapter);
+
+        return v;
+    }
 
     FileObserver observer =
             new FileObserver(android.os.Environment.getExternalStorageDirectory().toString()
