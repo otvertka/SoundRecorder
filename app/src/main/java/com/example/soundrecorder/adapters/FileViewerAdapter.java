@@ -79,7 +79,7 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
                 try {
 
                     PlaybackFragment playbackFragment =
-                            new PlaybackFragment().newInstanse(getItem(holder.getPosition()));
+                            new PlaybackFragment().newInstance(getItem(holder.getPosition()));
 
                     FragmentTransaction transaction = ((FragmentActivity) mContext)
                             .getSupportFragmentManager()
