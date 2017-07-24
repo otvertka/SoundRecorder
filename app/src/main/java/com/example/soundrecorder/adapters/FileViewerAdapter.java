@@ -1,8 +1,13 @@
 package com.example.soundrecorder.adapters;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
@@ -10,7 +15,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.soundrecorder.DBHelper;
 import com.example.soundrecorder.R;
@@ -18,6 +25,8 @@ import com.example.soundrecorder.RecordingItem;
 import com.example.soundrecorder.fragments.PlaybackFragment;
 import com.example.soundrecorder.listeners.OnDatabaseChangedListener;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import static com.example.soundrecorder.fragments.RecordFragment.LOG_TAG;
@@ -92,6 +101,155 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
                 }
             }
         });
+
+        holder.cardView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+
+                ArrayList<String> entry = new ArrayList<>();
+                entry.add("Share file");
+                entry.add("Rename file");
+                entry.add("Delete file");
+
+                final CharSequence[] items = entry.toArray(new CharSequence[entry.size()]);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setTitle("Options");
+                builder.setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int item) {
+                        if  (item == 0){
+                            shareFileDialog(holder.getLayoutPosition());
+                        } if (item == 1){
+                            renameFileDialog(holder.getLayoutPosition());
+                        } else if (item == 2){
+                            deleteFileDialog(holder.getLayoutPosition());
+                        }
+                    }
+                });
+                builder.setCancelable(true);
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+                return false;
+            }
+        });
+
+    }
+
+    private void deleteFileDialog(final int position) {
+        AlertDialog.Builder confirmDelete = new AlertDialog.Builder(mContext);
+        confirmDelete.setTitle("Confirm Delete...");
+        confirmDelete.setMessage("Are you sure you would like to delete this file?");
+        confirmDelete.setCancelable(true);
+        confirmDelete.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int id) {
+                try {
+                    //remove item from database, recycleView and storage
+                    remove(position);
+                } catch (Exception e){
+                    Log.e(LOG_TAG, "exception", e);
+                }
+                
+                dialogInterface.cancel();
+            }
+        });
+        
+        confirmDelete.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int id) {
+                dialogInterface.cancel();
+            }
+        });
+        
+        AlertDialog alert = confirmDelete.create();
+        alert.show();
+    }
+
+    private void remove(int position) {
+        //remove item from database, recycleView and storage
+
+        //delete file from storage
+        File file = new File(getItem(position).getmFilePath());
+        file.delete();
+
+        Toast.makeText(mContext,
+                String.format("%1&s successfully deleted",
+                        getItem(position).getmName()), Toast.LENGTH_SHORT).show();
+
+        dbHelper.removeItemWithID(getItem(position).getmId());
+        notifyItemChanged(position);
+    }
+
+    private void renameFileDialog(final int position) {
+        AlertDialog.Builder renameFileBuilder = new AlertDialog.Builder(mContext);
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        View view = inflater.inflate(R.layout.dialog_rename_file, null);
+
+        final EditText input = (EditText) view.findViewById(R.id.new_name);
+
+        renameFileBuilder.setTitle("Rename file");
+        renameFileBuilder.setCancelable(true);
+        renameFileBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int id) {
+                try {
+                    String value = input.getText().toString().trim() + ".mp4";
+                    rename(position, value);
+                } catch (Exception e){
+                    Log.e(LOG_TAG, "exception", e);
+                }
+                
+                dialogInterface.cancel();
+            }
+        });
+        renameFileBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+        
+        renameFileBuilder.setView(view);
+        AlertDialog alert = renameFileBuilder.create();
+        alert.show();
+    }
+
+    private void rename(int position, String name) {
+        // rename a file
+
+        String mFilePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+        mFilePath += "/SoundRecorder/" + name;
+        File f = new File(mFilePath);
+
+        if (f.exists() && !f.isDirectory()) { // не понял 2 часть условия
+            // file name is not unique, cannot rename file
+            Toast.makeText(mContext,
+                    String.format("The fie %1&s already exists. Please choose a different...", name),
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            //file name is unique, rename file
+            File oldFilePath = new File(getItem(position).getmFilePath());
+            oldFilePath.renameTo(f);
+            dbHelper.renameItem(getItem(position), name, mFilePath);
+            notifyItemChanged(position);
+        }
+    }
+
+    private void shareFileDialog(int position) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(getItem(position).getmFilePath())));
+        intent.setType("audio/mp4");
+        mContext.startActivity(Intent.createChooser(intent, "Send to"));
     }
 
 
