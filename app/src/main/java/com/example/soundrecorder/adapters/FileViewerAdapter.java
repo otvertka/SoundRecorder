@@ -34,7 +34,7 @@ import static com.example.soundrecorder.fragments.RecordFragment.LOG_TAG;
 public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.RecordingsViewHolder>
         implements OnDatabaseChangedListener{
 
-    //private static final String LOG_TAG = "FileViewAdapter";
+    private static final String LOG_TAG = "FileViewAdapter";
 
     private DBHelper dbHelper;
 
@@ -119,11 +119,11 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
                     @Override
                     public void onClick(DialogInterface dialogInterface, int item) {
                         if  (item == 0){
-                            shareFileDialog(holder.getLayoutPosition());
+                            shareFileDialog(holder.getPosition());
                         } if (item == 1){
-                            renameFileDialog(holder.getLayoutPosition());
+                            renameFileDialog(holder.getPosition());
                         } else if (item == 2){
-                            deleteFileDialog(holder.getLayoutPosition());
+                            deleteFileDialog(holder.getPosition());
                         }
                     }
                 });
@@ -144,49 +144,24 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
 
     }
 
-    private void deleteFileDialog(final int position) {
-        AlertDialog.Builder confirmDelete = new AlertDialog.Builder(mContext);
-        confirmDelete.setTitle("Confirm Delete...");
-        confirmDelete.setMessage("Are you sure you would like to delete this file?");
-        confirmDelete.setCancelable(true);
-        confirmDelete.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int id) {
-                try {
-                    //remove item from database, recycleView and storage
-                    remove(position);
-                } catch (Exception e){
-                    Log.e(LOG_TAG, "exception", e);
-                }
-                
-                dialogInterface.cancel();
-            }
-        });
-        
-        confirmDelete.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int id) {
-                dialogInterface.cancel();
-            }
-        });
-        
-        AlertDialog alert = confirmDelete.create();
-        alert.show();
-    }
-
-    private void remove(int position) {
+    public void remove(int position) {
         //remove item from database, recycleView and storage
 
         //delete file from storage
+
         File file = new File(getItem(position).getmFilePath());
         file.delete();
 
-        Toast.makeText(mContext,
-                String.format("%1&s successfully deleted",
-                        getItem(position).getmName()), Toast.LENGTH_SHORT).show();
+        Toast.makeText(
+                mContext,
+                String.format("%1$s successfully deleted",
+                        getItem(position).getmName()
+                ),
+                Toast.LENGTH_SHORT
+        ).show();
 
         dbHelper.removeItemWithID(getItem(position).getmId());
-        notifyItemChanged(position);
+        notifyItemRemoved(position);
     }
 
     private void renameFileDialog(final int position) {
@@ -207,7 +182,7 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
                 } catch (Exception e){
                     Log.e(LOG_TAG, "exception", e);
                 }
-                
+
                 dialogInterface.cancel();
             }
         });
@@ -217,7 +192,7 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
                 dialogInterface.cancel();
             }
         });
-        
+
         renameFileBuilder.setView(view);
         AlertDialog alert = renameFileBuilder.create();
         alert.show();
@@ -252,8 +227,8 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
         mContext.startActivity(Intent.createChooser(intent, "Send to"));
     }
 
-
     static class RecordingsViewHolder extends RecyclerView.ViewHolder {
+
         TextView vName;
         TextView vLength;
         TextView vDateAdded;
@@ -266,6 +241,7 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
             vDateAdded = (TextView) v.findViewById(R.id.file_date_added_text);
             cardView = v.findViewById(R.id.card_view);
         }
+
     }
 
     @Override
@@ -287,5 +263,40 @@ public class FileViewerAdapter extends RecyclerView.Adapter<FileViewerAdapter.Re
     @Override
     public void onDatabaseEntryRenamed() {
 
+    }
+
+    private void deleteFileDialog(final int position) {
+        AlertDialog.Builder confirmDelete = new AlertDialog.Builder(mContext);
+        confirmDelete.setTitle("Confirm Delete...");
+        confirmDelete.setMessage("Are you sure you would like to delete this file?");
+        confirmDelete.setCancelable(true);
+        confirmDelete.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int id) {
+                try {
+                    //remove item from database, recycleView and storage
+                    remove(position);
+                } catch (Exception e){
+                    Log.e(LOG_TAG, "exception", e);
+                }
+
+                dialogInterface.cancel();
+            }
+        });
+
+        confirmDelete.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int id) {
+                dialogInterface.cancel();
+            }
+        });
+
+        AlertDialog alert = confirmDelete.create();
+        alert.show();
+    }
+
+    //TODO
+    public void removeOutOfApp(String filePath) {
+        //user deletes a saved recording out of the application through another application
     }
 }

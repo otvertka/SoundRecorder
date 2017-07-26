@@ -71,7 +71,7 @@ public class FileViewerFragment extends Fragment {
                                 + "/SoundRecorder" + file + "]");
 
                         // remove file from database and recyclerview
-                        //mFileViewerAdapter.removeOutOfApp(filePath);
+                        mFileViewerAdapter.removeOutOfApp(filePath);
                     }
                 }
             };
